@@ -1,0 +1,165 @@
+{% extends 'ecom/homebase.html' %}
+{% load static %}
+{% block content %}
+
+
+<head>
+  <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+  <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+  <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+<style media="screen">
+  .button {
+  display: inline-block;
+  border-radius: 4px;
+  background-color: #f4511e;
+  border: none;
+  color: #FFFFFF;
+  text-align: center;
+  font-size: 28px;
+  padding: 20px;
+  width: 200px;
+  transition: all 0.5s;
+  cursor: pointer;
+  margin: 5px;
+}
+
+.button span {
+  cursor: pointer;
+  display: inline-block;
+  position: relative;
+  transition: 0.5s;
+}
+
+.button span:after {
+  content: '\00bb';
+  position: absolute;
+  opacity: 0;
+  top: 0;
+  right: -20px;
+  transition: 0.5s;
+}
+
+.button:hover span {
+  padding-right: 25px;
+}
+
+.button:hover span:after {
+  opacity: 1;
+  right: 0;
+}
+
+.button2 {
+  background-color: white;
+  color: black;
+  border: 2px solid #008CBA;
+}
+
+.button2:hover {
+  background-color: #008CBA;
+  color: white;
+}
+
+</style>
+
+</head>
+<br><br><br><br>
+
+<div class="container">
+  <h3 class="text-center mb-4">My Cart</h3>
+  <div class="row">
+    {% for p in products %}
+      {% if p %}
+        <div class="col-md-4 mb-4">
+          <div class="card shadow-sm">
+            <div class="card-body">
+              <!-- Product Image -->
+              <div class="text-center">
+                {% if p.image %}
+                  <img src="{% static p.image.url %}" alt="Product Image" height="100px" width="100px" />
+                {% else %}
+                  <span>No Image</span>
+                {% endif %}
+              </div>
+              
+              <!-- Product Info -->
+              <h5 class="card-title mt-3">{{ p.name }}</h5>
+              <p class="text-muted mb-1">{{ p.description }}</p>
+              <p class="fw-bold text-danger">${{ p.price }}</p>
+              
+              <!-- Product Details -->
+              <ul class="list-group list-group-flush">
+                <li class="list-group-item"><strong>Gender:</strong> {{ p.get_gender_display }}</li>
+                <li class="list-group-item"><strong>Size:</strong> {{ p.get_size_display }}</li>
+                <li class="list-group-item"><strong>Material:</strong> {{ p.material }}</li>
+                <li class="list-group-item"><strong>Color:</strong> {{ p.color }}</li>
+                <li class="list-group-item"><strong>Sleeve Length:</strong> {{ p.get_sleeve_length_display }}</li>
+                <li class="list-group-item"><strong>Neck Type:</strong> {{ p.get_neck_type_display }}</li>
+                <li class="list-group-item"><strong>Pattern:</strong> {{ p.get_pattern_display }}</li>
+                <li class="list-group-item"><strong>Occasion:</strong> {{ p.get_occasion_display }}</li>
+                <li class="list-group-item"><strong>Brand:</strong> {{ p.brand }}</li>
+                <li class="list-group-item">
+                  <strong>Rating:</strong>
+                  {% if p.rating %}
+                    ⭐ {{ p.rating }} / 5
+                  {% else %}
+                    Not Rated
+                  {% endif %}
+                </li>
+                <li class="list-group-item"><strong>Stock:</strong> {{ p.stock_quantity }} available</li>
+                <li class="list-group-item">
+                  <strong>Best Seller:</strong>
+                  {% if p.is_best_seller %}
+                    <span class="badge bg-success">Yes</span>
+                  {% else %}
+                    <span class="badge bg-secondary">No</span>
+                  {% endif %}
+                </li>
+                <li class="list-group-item">
+                  <strong>New Arrival:</strong>
+                  {% if p.is_new_arrival %}
+                    <span class="badge bg-info">Yes</span>
+                  {% else %}
+                    <span class="badge bg-secondary">No</span>
+                  {% endif %}
+                </li>
+              </ul>
+
+              <!-- Action Buttons -->
+              <div class="d-flex justify-content-between mt-3">
+                <a href="{% url 'remove-from-cart' p.id %}" class="btn btn-outline-danger btn-sm">
+                  <i class="bi bi-trash"></i> Remove
+                </a>
+                <a href="/customer-address" class="btn btn-success btn-sm">
+                  <i class="bi bi-cart-check"></i> Buy Now
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% else %}
+        <div class="col-12">
+          <h4 class="text-center text-muted mt-4">No products in the cart</h4>
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+
+  <!-- Total Section -->
+  <div class="text-center mt-4">
+    <button class="btn btn-danger btn-lg me-2">Total: ${{ total }}</button>
+    <a href="/customer-address">
+      <button class="btn btn-success btn-lg">
+        <i class="bi bi-cart"></i> Purchase
+      </button>
+    </a>
+  </div>
+</div>
+
+
+
+
+<br><br><br><br><br>
+<!--
+developed By : sumit kumar
+-->
+{% endblock content %}
