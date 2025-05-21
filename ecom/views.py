@@ -1,6 +1,6 @@
 from django.shortcuts import render,redirect,reverse
 from . import forms,models
-from django.http import HttpResponseRedirect,HttpResponse
+from django.http import HttpResponseRedirect,HttpResponse, JsonResponse
 from django.core.mail import send_mail
 from django.contrib.auth.models import Group
 from django.contrib.auth.decorators import login_required,user_passes_test
@@ -280,130 +280,158 @@ def view_feedback_view(request):
 #---------------------------------------------------------------------------------
 #------------------------ PUBLIC CUSTOMER RELATED VIEWS START ---------------------
 #---------------------------------------------------------------------------------
+def get_size_recommendation(height_cm, weight_kg, gender, occasion):
+    # Simple rule-based size recommendation
+    size_ranges = {
+        'M': {'height': (160, 180), 'weight': (60, 80)},
+        'F': {'height': (150, 170), 'weight': (50, 70)},
+        'U': {'height': (155, 175), 'weight': (55, 75)},
+    }
+    size_order = ['XS', 'S', 'M', 'L', 'XL', 'XXL']
+    
+    # Default to unisex if gender not specified
+    ranges = size_ranges.get(gender, size_ranges['U'])
+    
+    # Basic size logic
+    if height_cm < ranges['height'][0] or weight_kg < ranges['weight'][0]:
+        size = 'XS'
+    elif height_cm > ranges['height'][1] or weight_kg > ranges['weight'][1]:
+        size = 'XXL'
+    else:
+        size = 'M'  # Default middle size
+    
+    # Adjust for active wear (tighter fit)
+    if occasion == 'ACTIVE':
+        size_index = size_order.index(size)
+        if size_index > 0:
+            size = size_order[size_index - 1]
+    
+    return size
+
+def size_recommendation_view(request):
+    if request.method == 'POST':
+        height_cm = float(request.POST.get('height_cm', 0))
+        weight_kg = float(request.POST.get('weight_kg', 0))
+        product_id = request.POST.get('product_id')
+        
+        product = models.Product.objects.get(id=product_id)
+        recommended_size = get_size_recommendation(height_cm, weight_kg, product.gender, product.occasion)
+        
+        # Save measurement for logged-in users
+        if request.user.is_authenticated:
+            models.CustomerMeasurement.objects.create(
+                user=request.user,
+                height_cm=height_cm,
+                weight_kg=weight_kg
+            )
+        
+        return JsonResponse({'recommended_size': recommended_size})
+    
+    return JsonResponse({'error': 'Invalid request'}, status=400)
+
+
 def search_view(request):
-    # whatever user write in search box we get in query
     query = request.GET['query']
-    products=models.Product.objects.all().filter(name__icontains=query)
+    products = models.Product.objects.all().filter(name__icontains=query)
     if 'product_ids' in request.COOKIES:
         product_ids = request.COOKIES['product_ids']
-        counter=product_ids.split('|')
-        product_count_in_cart=len(set(counter))
+        counter = product_ids.split('|')
+        product_count_in_cart = len(set(counter))
     else:
-        product_count_in_cart=0
-
-    # word variable will be shown in html when user click on search button
-    word="Searched Result :"
-
+        product_count_in_cart = 0
+    word = "Searched Result :"
     if request.user.is_authenticated:
-        return render(request,'ecom/customer_home.html',{'products':products,'word':word,'product_count_in_cart':product_count_in_cart})
-    return render(request,'ecom/index.html',{'products':products,'word':word,'product_count_in_cart':product_count_in_cart})
+        return render(request, 'ecom/customer_home.html', {'products': products, 'word': word, 'product_count_in_cart': product_count_in_cart})
+    return render(request, 'ecom/index.html', {'products': products, 'word': word, 'product_count_in_cart': product_count_in_cart})
 
 def product_detail_view(request, pk):
     product = models.Product.objects.get(id=pk)
-    return render(request, 'ecom/product_detail.html', {'product': product})
+    recommended_size = None
+    if request.user.is_authenticated:
+        # Check for past measurements
+        measurement = models.CustomerMeasurement.objects.filter(user=request.user).order_by('-created_at').first()
+        if measurement:
+            recommended_size = get_size_recommendation(measurement.height_cm, measurement.weight_kg, product.gender, product.occasion)
+    return render(request, 'ecom/product_detail.html', {'product': product, 'recommended_size': recommended_size})
 
-# any one can add product to cart, no need of signin
-def add_to_cart_view(request,pk):
-    products=models.Product.objects.all()
-
-    #for cart counter, fetching products ids added by customer from cookies
+def add_to_cart_view(request, pk):
+    products = models.Product.objects.all()
     if 'product_ids' in request.COOKIES:
         product_ids = request.COOKIES['product_ids']
-        counter=product_ids.split('|')
-        product_count_in_cart=len(set(counter))
+        counter = product_ids.split('|')
+        product_count_in_cart = len(set(counter))
     else:
-        product_count_in_cart=1
-
-    response = render(request, 'ecom/index.html',{'products':products,'product_count_in_cart':product_count_in_cart})
-
-    #adding product id to cookies
+        product_count_in_cart = 1
+    response = render(request, 'ecom/index.html', {'products': products, 'product_count_in_cart': product_count_in_cart})
     if 'product_ids' in request.COOKIES:
         product_ids = request.COOKIES['product_ids']
-        if product_ids=="":
-            product_ids=str(pk)
+        if product_ids == "":
+            product_ids = str(pk)
         else:
-            product_ids=product_ids+"|"+str(pk)
+            product_ids = product_ids + "|" + str(pk)
         response.set_cookie('product_ids', product_ids)
     else:
         response.set_cookie('product_ids', pk)
-
-    product=models.Product.objects.get(id=pk)
+    product = models.Product.objects.get(id=pk)
     messages.info(request, product.name + ' added to cart successfully!')
-
     return response
 
-
-
-# for checkout of cart
 def cart_view(request):
-    #for cart counter
     if 'product_ids' in request.COOKIES:
         product_ids = request.COOKIES['product_ids']
-        counter=product_ids.split('|')
-        product_count_in_cart=len(set(counter))
+        counter = product_ids.split('|')
+        product_count_in_cart = len(set(counter))
     else:
-        product_count_in_cart=0
-
-    # fetching product details from db whose id is present in cookie
-    products=None
-    total=0
+        product_count_in_cart = 0
+    products = None
+    total = 0
     if 'product_ids' in request.COOKIES:
         product_ids = request.COOKIES['product_ids']
         if product_ids != "":
-            product_id_in_cart=product_ids.split('|')
-            products=models.Product.objects.all().filter(id__in = product_id_in_cart)
-
-            #for total price shown in cart
+            product_id_in_cart = product_ids.split('|')
+            products = models.Product.objects.all().filter(id__in=product_id_in_cart)
             for p in products:
-                total=total+p.price
-    return render(request,'ecom/cart.html',{'products':products,'total':total,'product_count_in_cart':product_count_in_cart})
+                total = total + p.price
+    return render(request, 'ecom/cart.html', {'products': products, 'total': total, 'product_count_in_cart': product_count_in_cart})
 
-
-def remove_from_cart_view(request,pk):
-    #for counter in cart
+def remove_from_cart_view(request, pk):
     if 'product_ids' in request.COOKIES:
         product_ids = request.COOKIES['product_ids']
-        counter=product_ids.split('|')
-        product_count_in_cart=len(set(counter))
+        counter = product_ids.split('|')
+        product_count_in_cart = len(set(counter))
     else:
-        product_count_in_cart=0
-
-    # removing product id from cookie
-    total=0
+        product_count_in_cart = 0
+    total = 0
     if 'product_ids' in request.COOKIES:
         product_ids = request.COOKIES['product_ids']
-        product_id_in_cart=product_ids.split('|')
-        product_id_in_cart=list(set(product_id_in_cart))
+        product_id_in_cart = product_ids.split('|')
+        product_id_in_cart = list(set(product_id_in_cart))
         product_id_in_cart.remove(str(pk))
-        products=models.Product.objects.all().filter(id__in = product_id_in_cart)
-        #for total price shown in cart after removing product
+        products = models.Product.objects.all().filter(id__in=product_id_in_cart)
         for p in products:
-            total=total+p.price
-
-        #  for update coookie value after removing product id in cart
-        value=""
+            total = total + p.price
+        value = ""
         for i in range(len(product_id_in_cart)):
-            if i==0:
-                value=value+product_id_in_cart[0]
+            if i == 0:
+                value = value + product_id_in_cart[0]
             else:
-                value=value+"|"+product_id_in_cart[i]
-        response = render(request, 'ecom/cart.html',{'products':products,'total':total,'product_count_in_cart':product_count_in_cart})
-        if value=="":
+                value = value + "|" + product_id_in_cart[i]
+        response = render(request, 'ecom/cart.html', {'products': products, 'total': total, 'product_count_in_cart': product_count_in_cart})
+        if value == "":
             response.delete_cookie('product_ids')
-        response.set_cookie('product_ids',value)
+        response.set_cookie('product_ids', value)
         return response
 
-
 def send_feedback_view(request):
-    feedbackForm=forms.FeedbackForm()
+    feedbackForm = forms.FeedbackForm()
     if request.method == 'POST':
         feedbackForm = forms.FeedbackForm(request.POST)
         if feedbackForm.is_valid():
             feedbackForm.save()
             return render(request, 'ecom/feedback_sent.html')
-    return render(request, 'ecom/send_feedback.html', {'feedbackForm':feedbackForm})
+    return render(request, 'ecom/send_feedback.html', {'feedbackForm': feedbackForm})
 
-
+    
 #---------------------------------------------------------------------------------
 #------------------------ CUSTOMER RELATED VIEWS START ------------------------------
 #---------------------------------------------------------------------------------

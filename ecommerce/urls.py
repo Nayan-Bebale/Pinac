@@ -15,6 +15,7 @@ urlpatterns = [
     path('search', views.search_view,name='search'),
     path('send-feedback', views.send_feedback_view,name='send-feedback'),
     path('view-feedback', views.view_feedback_view,name='view-feedback'),
+    path('size-recommendation/', views.size_recommendation_view, name='size-recommendation'),
 
     path('adminclick', views.adminclick_view),
     path('adminlogin', LoginView.as_view(template_name='ecom/adminlogin.html'),name='adminlogin'),
@@ -49,9 +50,11 @@ urlpatterns = [
     path('remove-from-cart/<int:pk>', views.remove_from_cart_view,name='remove-from-cart'),
     path('customer-address', views.customer_address_view,name='customer-address'),
     path('payment-success', views.payment_success_view,name='payment-success'),
-    path('product-detail/<int:pk>/', views.product_detail_view, name='product_detail'),
+    path('product-detail/<int:pk>/', views.product_detail_view, name='product-detail'),
 
 ]
+
+
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

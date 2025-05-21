@@ -384,7 +384,6 @@ img {
 </style>
 
 
-{% load url_manipulation %}
 
 <div class="row">
   <div class="col-md-12">
@@ -410,339 +409,69 @@ img {
   </div>
 </div>
 
-{% if products %}
-<!-- Product Section with New Design -->
-<section class="bg0 p-t-23 p-b-140">
-    <div class="container">
-        <div class="p-b-10">
-            <h3 class="ltext-103 cl5" style="text-align:center; color:#3E454C;">
-                {{ word }}
-            </h3>
-        </div>
 
-        <!-- Filter and Search Options -->
-        <div class="flex-w flex-sb-m p-b-52">
-            <div class="flex-w flex-l-m filter-tope-group m-tb-10">
-                <a href="?" class="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5 {% if not request.GET.gender %}how-active1{% endif %}">
-                    All Products
-                </a>
-                <a href="?gender=F" class="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5 {% if request.GET.gender == 'F' %}how-active1{% endif %}">
-                    Women
-                </a>
-                <a href="?gender=M" class="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5 {% if request.GET.gender == 'M' %}how-active1{% endif %}">
-                    Men
-                </a>
-                <a href="?gender=U" class="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5 {% if request.GET.gender == 'U' %}how-active1{% endif %}">
-                    Unisex
-                </a>
-            </div>
-
-            <div class="flex-w flex-c-m m-tb-10">
-                <div class="flex-c-m stext-106 cl6 size-104 bor4 pointer hov-btn3 trans-04 m-r-8 m-tb-4 js-show-filter">
-                    <i class="icon-filter cl2 m-r-6 fs-15 trans-04 zmdi zmdi-filter-list"></i>
-                    <i class="icon-close-filter cl2 m-r-6 fs-15 trans-04 zmdi zmdi-close dis-none"></i>
-                    Filter
-                </div>
-
-                <div class="flex-c-m stext-106 cl6 size-105 bor4 pointer hov-btn3 trans-04 m-tb-4 js-show-search">
-                    <i class="icon-search cl2 m-r-6 fs-15 trans-04 zmdi zmdi-search"></i>
-                    <i class="icon-close-search cl2 m-r-6 fs-15 trans-04 zmdi zmdi-close dis-none"></i>
-                    Search
-                </div>
-            </div>
-            
-            <!-- Search product -->
-            <div class="dis-none panel-search w-full p-t-10 p-b-15">
-                <form method="GET" action=".">
-                    <div class="bor8 dis-flex p-l-15">
-                        <button type="submit" class="size-113 flex-c-m fs-16 cl2 hov-cl1 trans-04">
-                            <i class="zmdi zmdi-search"></i>
-                        </button>
-                        <input class="mtext-107 cl2 size-114 plh2 p-r-15" type="text" name="search" 
-                               placeholder="Search by name, color, or material" value="{{ request.GET.search }}">
-                    </div>
-                </form>
-            </div>
-
-            <!-- Filter -->
-            <div class="dis-none panel-filter w-full p-t-10">
-                <form method="GET" action=".">
-                    <div class="wrap-filter flex-w bg6 w-full p-lr-40 p-t-27 p-lr-15-sm">
-                        <div class="filter-col1 p-r-15 p-b-27">
-                            <div class="mtext-102 cl2 p-b-15">
-                                Sort By
-                            </div>
-                            <ul>
-                                <li class="p-b-6">
-                                    <a href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}sort_by=newest" 
-                                       class="filter-link stext-106 trans-04 {% if request.GET.sort_by == 'newest' or not request.GET.sort_by %}filter-link-active{% endif %}">
-                                        Newness
-                                    </a>
-                                </li>
-                                <li class="p-b-6">
-                                    <a href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}sort_by=popularity" 
-                                       class="filter-link stext-106 trans-04 {% if request.GET.sort_by == 'popularity' %}filter-link-active{% endif %}">
-                                        Popularity
-                                    </a>
-                                </li>
-                                <li class="p-b-6">
-                                    <a href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}sort_by=price_low_high" 
-                                       class="filter-link stext-106 trans-04 {% if request.GET.sort_by == 'price_low_high' %}filter-link-active{% endif %}">
-                                        Price: Low to High
-                                    </a>
-                                </li>
-                                <li class="p-b-6">
-                                    <a href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}sort_by=price_high_low" 
-                                       class="filter-link stext-106 trans-04 {% if request.GET.sort_by == 'price_high_low' %}filter-link-active{% endif %}">
-                                        Price: High to Low
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-
-                        <div class="filter-col2 p-r-15 p-b-27">
-                            <div class="mtext-102 cl2 p-b-15">
-                                Size
-                            </div>
-                            <ul>
-                                {% for size, display in SIZE %}
-                                <li class="p-b-6">
-                                    <a href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}size={{ size }}" 
-                                       class="filter-link stext-106 trans-04 {% if request.GET.size == size %}filter-link-active{% endif %}">
-                                        {{ display }}
-                                    </a>
-                                </li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-
-                        <div class="filter-col3 p-r-15 p-b-27">
-                            <div class="mtext-102 cl2 p-b-15">
-                                Sleeve Length
-                            </div>
-                            <ul>
-                                {% for sleeve, display in SleeveLength %}
-                                <li class="p-b-6">
-                                    <a href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}sleeve_length={{ sleeve }}" 
-                                       class="filter-link stext-106 trans-04 {% if request.GET.sleeve_length == sleeve %}filter-link-active{% endif %}">
-                                        {{ display }}
-                                    </a>
-                                </li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-
-                        <div class="filter-col4 p-b-27">
-                            <div class="mtext-102 cl2 p-b-15">
-                                Neck Type
-                            </div>
-                            <ul>
-                                {% for neck, display in NeckType %}
-                                <li class="p-b-6">
-                                    <a href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}neck_type={{ neck }}" 
-                                       class="filter-link stext-106 trans-04 {% if request.GET.neck_type == neck %}filter-link-active{% endif %}">
-                                        {{ display }}
-                                    </a>
-                                </li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                    </div>
-                    
-                    <div class="wrap-filter flex-w bg6 w-full p-lr-40 p-b-27 p-lr-15-sm">
-                        <div class="filter-col1 p-r-15 p-b-27">
-                            <div class="mtext-102 cl2 p-b-15">
-                                Pattern
-                            </div>
-                            <ul>
-                                {% for pattern, display in Pattern %}
-                                <li class="p-b-6">
-                                    <a href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}pattern={{ pattern }}" 
-                                       class="filter-link stext-106 trans-04 {% if request.GET.pattern == pattern %}filter-link-active{% endif %}">
-                                        {{ display }}
-                                    </a>
-                                </li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-
-                        <div class="filter-col2 p-r-15 p-b-27">
-                            <div class="mtext-102 cl2 p-b-15">
-                                Occasion
-                            </div>
-                            <ul>
-                                {% for occasion, display in Occasion %}
-                                <li class="p-b-6">
-                                    <a href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}occasion={{ occasion }}" 
-                                       class="filter-link stext-106 trans-04 {% if request.GET.occasion == occasion %}filter-link-active{% endif %}">
-                                        {{ display }}
-                                    </a>
-                                </li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-
-                        <div class="filter-col3 p-r-15 p-b-27">
-                            <div class="mtext-102 cl2 p-b-15">
-                                Price Range
-                            </div>
-                            <ul>
-                                <li class="p-b-6">
-                                    <a href="?{% if request.GET %}{{ request.GET.urlencode|remove_query_param:'price_min'|remove_query_param:'price_max' }}{% endif %}" 
-                                       class="filter-link stext-106 trans-04 {% if not request.GET.price_min and not request.GET.price_max %}filter-link-active{% endif %}">
-                                        All Prices
-                                    </a>
-                                </li>
-                                <li class="p-b-6">
-                                    <a href="?{% if request.GET %}{{ request.GET.urlencode|remove_query_param:'price_min'|remove_query_param:'price_max' }}&{% endif %}price_min=0&price_max=50" 
-                                       class="filter-link stext-106 trans-04 {% if request.GET.price_min == '0' and request.GET.price_max == '50' %}filter-link-active{% endif %}">
-                                        $0 - $50
-                                    </a>
-                                </li>
-                                <li class="p-b-6">
-                                    <a href="?{% if request.GET %}{{ request.GET.urlencode|remove_query_param:'price_min'|remove_query_param:'price_max' }}&{% endif %}price_min=50&price_max=100" 
-                                       class="filter-link stext-106 trans-04 {% if request.GET.price_min == '50' and request.GET.price_max == '100' %}filter-link-active{% endif %}">
-                                        $50 - $100
-                                    </a>
-                                </li>
-                                <li class="p-b-6">
-                                    <a href="?{% if request.GET %}{{ request.GET.urlencode|remove_query_param:'price_min'|remove_query_param:'price_max' }}&{% endif %}price_min=100" 
-                                       class="filter-link stext-106 trans-04 {% if request.GET.price_min == '100' and not request.GET.price_max %}filter-link-active{% endif %}">
-                                        $100+
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-
-                        <div class="filter-col4 p-b-27">
-                            <div class="mtext-102 cl2 p-b-15">
-                                Tags
-                            </div>
-                            <div class="flex-w p-t-4 m-r--5">
-                                <a href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}is_best_seller=True" 
-                                   class="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5 {% if request.GET.is_best_seller == 'True' %}active-tag{% endif %}">
-                                    Best Seller
-                                </a>
-                                <a href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}is_new_arrival=True" 
-                                   class="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5 {% if request.GET.is_new_arrival == 'True' %}active-tag{% endif %}">
-                                    New Arrival
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- Products Grid -->
-        <div class="row isotope-grid">
-            {% for p in products %}
-            <div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item {{ p.gender }}">
-                <!-- Product Card -->
-                <div class="product-card">
-                    <!-- Product Image -->
-                    <div class="product-img-container">
-                        {% if p.discount_percentage %}
-                        <span class="product-badge discount-badge">-{{ p.discount_percentage }}%</span>
-                        {% endif %}
-                        {% if p.is_new_arrival %}
-                        <span class="product-badge new-badge">NEW</span>
-                        {% endif %}
-                        
-                        {% if p.image %}
-                        <img class="product-img" src="{{ p.image.url }}" alt="{{ p.name }}">
-                        {% else %}
-                        <img class="product-img" src="{% static 'product_image/anomaly-WWesmHEgXDs-unsplash.jpg' %}" alt="Default product image">
-                        {% endif %}
-                    </div>
-                    
-                    <!-- Product Info -->
-                    <div class="product-info">
-                        <h3 class="product-title">{{ p.name }}</h3>
-                        <span class="product-brand">{{ p.brand|default:"Premium Brand" }}</span>
-                        
-                        <!-- Rating (optional) -->
-                        <div class="product-rating">
-                            <div class="stars">
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star-half-alt"></i>
-                                <i class="far fa-star"></i>
-                            </div>
-                            <span class="rating-count">(24)</span>
-                        </div>
-                        
-                        <p class="product-description">{{ p.description|truncatewords:20 }}</p>
-                        
-                        <div class="price-section">
-                            <div>
-                                <span class="current-price">${{ p.price }}</span>
-                                {% if p.original_price %}
-                                <span class="original-price">${{ p.original_price }}</span>
-                                {% endif %}
-                            </div>
-                        </div>
-                        
-                        <div class="action-buttons">
-                            <a href="{% url 'add-to-cart' p.id %}" class="add-to-cart-btn">
-                                <i class="fas fa-shopping-cart"></i> Add to Cart
-                            </a>
-                            <button class="wishlist-btn" title="Add to Wishlist">
-                                <i class="far fa-heart"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-        
-        <!-- Pagination -->
-        {% if products.has_other_pages %}
-        <div class="flex-c-m flex-w w-full p-t-45">
-            <div class="pagination">
-                {% if products.has_previous %}
-                    <a href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}page={{ products.previous_page_number }}" 
-                       class="flex-c-m stext-101 cl5 size-103 bg2 bor1 hov-btn1 p-lr-15 trans-04">
-                        Previous
-                    </a>
+  {%if products%}
+  <h3 style="text-align:center; color:#3E454C;">{{word}}</h3>
+  <br>
+  
+  <!-- products data start -->
+<div class="row">
+  {% for p in products %}
+    <!-- card1 -->
+    <div class="column">
+      <div class="container page-wrapper" style="width: 450px;">
+        <div class="page-inner">
+          <div class="row">
+            <div class="el-wrapper">
+              <div class="box-up">
+                {% if p.image %}
+                  <img class="img" src="{{ p.image.url }}" alt="product pic" height="300px" width="300px">
+                {% else %}
+                  <img class="img" src="{% static 'product_image/anomaly-WWesmHEgXDs-unsplash.jpg' %}" alt="default product pic" height="300px" width="300px">
                 {% endif %}
-                
-                {% for i in products.paginator.page_range %}
-                    {% if products.number == i %}
-                        <a href="#" class="flex-c-m stext-101 cl5 size-103 bg1 bor1 hov-btn1 p-lr-15 trans-04 active-pagination">
-                            {{ i }}
-                        </a>
-                    {% else %}
-                        <a href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}page={{ i }}" 
-                           class="flex-c-m stext-101 cl5 size-103 bg2 bor1 hov-btn1 p-lr-15 trans-04">
-                            {{ i }}
-                        </a>
-                    {% endif %}
-                {% endfor %}
-                
-                {% if products.has_next %}
-                    <a href="?{% if request.GET %}{{ request.GET.urlencode }}&{% endif %}page={{ products.next_page_number }}" 
-                       class="flex-c-m stext-101 cl5 size-103 bg2 bor1 hov-btn1 p-lr-15 trans-04">
-                        Next
-                    </a>
-                {% endif %}
+                <div class="img-info">
+                  <div class="info-inner">
+                    <span style="background-color:#3e454c; color:#fbfbfb;" class="p-company">{{ p.name }}</span>
+                    <button class="btn btn-primary btn-sm mt-2">
+                      <a href="{% url 'product-detail' p.id %}" style="color: #fff; text-decoration: none;">Product Details</a>
+                    </button>
+                  </div>
+                  <div class="a-size">{{ p.description }}</div>
+                </div>
+              </div>
+
+              <div class="box-down">
+                <div class="h-bg">
+                  <div class="h-bg-inner"></div>
+                </div>
+
+                <a class="cart" href="{% url 'add-to-cart' p.id %}">
+                  <span class="price">₹{{ p.price }}</span>
+                  <span class="add-to-cart">
+                    <span class="txt">Add To Cart</span>
+                  </span>
+                </a>
+              </div>
             </div>
+          </div>
         </div>
-        {% endif %}
+      </div>
     </div>
-</section>
-{% else %}
-<div class="col-12 text-center p-t-50 p-b-50">
-    <h4 class="stext-104 cl4">
-        No products found matching your criteria.
-    </h4>
-    <a href="?" class="flex-c-m stext-101 cl0 size-103 bg1 bor1 hov-btn1 p-lr-15 trans-04 m-t-20">
-        Clear Filters
-    </a>
-</div>
+    <!-- card1 end -->
+    {% if forloop.counter|divisibleby:"3" %}
+      </div>
+    <div class="row">
+          <br><br><br><br><br>
 {% endif %}
+
+  {% endfor %}
+</div>
+<!-- products data end -->
+
+
+{%else%}
+<h3 style="text-align:center; color:#3E454C;">No Search Found</h3>
+{%endif%}
 
 <script>
     {%if messages %}
@@ -754,9 +483,5 @@ img {
 <br><br><br>
 <br><br><br><br><br><br><br><br><br><br><br><br>
 
-
-<!--
-developed By : sumit kumar
--->
 
 {% endblock content %}

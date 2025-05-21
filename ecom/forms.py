@@ -22,7 +22,7 @@ class ProductForm(forms.ModelForm):
         model = models.Product
         fields = [
             'name', 'price', 'description', 'image', 'gender', 'size', 
-            'material', 'color', 'sleeve_length', 'neck_type', 
+            'material', 'color', 'dominant_colors', 'sleeve_length', 'neck_type', 
             'pattern', 'occasion', 'brand', 'rating', 
             'stock_quantity', 'is_best_seller', 'is_new_arrival'
         ]
